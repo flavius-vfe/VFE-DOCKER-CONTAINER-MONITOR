@@ -32,9 +32,6 @@ GitHub issues are available at:
 ```text
 https://github.com/flavius-vfe/VFE-docker-container-monitor/issues
 ```
-
-A public Unraid forum support thread must be created before submitting the repository to Community Applications.
-
 ## License
 
 MIT License. See `LICENSE`.
