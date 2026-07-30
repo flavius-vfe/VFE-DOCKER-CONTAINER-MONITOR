@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Containers>
+  <Plugin>True</Plugin>
+  <PluginURL>https://raw.githubusercontent.com/flavius-vfe/VFE-docker-container-monitor/main/vfe.docker.container.monitor.plg</PluginURL>
+  <PluginAuthor>VFE Flavius</PluginAuthor>
+  <Beta>False</Beta>
+  <Category>Tools:System:Status:</Category>
+  <Name>VFE Docker Container Monitor</Name>
+  <Description>Monitors Docker containers on Unraid with configurable health checks, dependency-aware recovery, and controlled restart protection.</Description>
+  <Date>2026-07-30</Date>
+  <MinVer>7.3.0</MinVer>
+  <Support>https://github.com/flavius-vfe/VFE-docker-container-monitor/issues</Support>
+  <Project>https://github.com/flavius-vfe/VFE-docker-container-monitor</Project>
+  <Icon>https://raw.githubusercontent.com/flavius-vfe/VFE-docker-container-monitor/main/images/vfe.docker.container.monitor.png</Icon>
+  <ExtraSearchTerms>docker monitor health restart dependency ping tcp http https container status</ExtraSearchTerms>
+</Containers>

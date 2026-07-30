@@ -1,0 +1,11 @@
+vfe.docker.container.monitor: VFE Docker Container Monitor
+vfe.docker.container.monitor:
+vfe.docker.container.monitor: Monitors Docker containers on Unraid with configurable health checks,
+vfe.docker.container.monitor: dependency-aware recovery, and controlled restart protection.
+vfe.docker.container.monitor: Includes Docker state, Docker health, ping, TCP, HTTP,
+vfe.docker.container.monitor: and HTTPS checks with dependency-aware start and stop ordering.
+vfe.docker.container.monitor: Settings are saved per container or for all containers.
+vfe.docker.container.monitor: Minimum supported Unraid version: 7.3.0.
+vfe.docker.container.monitor: Project: github.com/flavius-vfe/VFE-docker-container-monitor
+vfe.docker.container.monitor: License: MIT
+vfe.docker.container.monitor:

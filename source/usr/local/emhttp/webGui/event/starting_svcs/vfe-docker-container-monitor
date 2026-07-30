@@ -1,0 +1,2 @@
+#!/bin/bash
+/etc/rc.d/rc.vfe-docker-container-monitor start >/dev/null 2>&1

@@ -1,0 +1,89 @@
+Menu="Utilities"
+Title="VFE Docker Container Monitor"
+Icon="vfe-docker-container-monitor.png"
+Tag="plug"
+---
+<?php
+$csrfToken = isset($var['csrf_token']) ? (string)$var['csrf_token'] : '';
+if ($csrfToken === '') {
+    foreach (['/usr/local/emhttp/state/var.ini', '/var/local/emhttp/var.ini'] as $stateFile) {
+        $state = @parse_ini_file($stateFile);
+        if (is_array($state) && !empty($state['csrf_token'])) {
+            $csrfToken = (string)$state['csrf_token'];
+            break;
+        }
+    }
+}
+?>
+<link rel="stylesheet" href="/plugins/vfe.docker.container.monitor/assets/guardian.css?v=<?= @filemtime(__DIR__ . '/assets/guardian.css') ?: 0 ?>">
+<script>
+window.VFE_DOCKER_CONTAINER_MONITOR = {
+  csrfTokenFallback: <?= json_encode($csrfToken, JSON_UNESCAPED_SLASHES) ?>,
+  apiUrl: '/plugins/vfe.docker.container.monitor/include/api.php'
+};
+</script>
+
+<div id="cg-app" class="cg-app">
+  <input id="cg-csrf-token" type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>">
+  <div class="cg-header">
+    <div>
+      <h2>VFE Docker Container Monitor</h2>
+      <p class="cg-muted">Monitors Docker containers on Unraid with configurable health checks, dependency-aware recovery, and controlled restart protection.</p>
+    </div>
+    <div class="cg-header-actions">
+      <label class="cg-switch-row" title="Globally enable or pause automatic monitoring">
+        <input id="cg-global-enabled" type="checkbox">
+        <span>Monitoring enabled (save required)</span>
+      </label>
+      <span id="cg-save-status" class="cg-save-status" role="status" aria-live="polite">Loading configuration…</span>
+      <button id="cg-save" type="button" class="cg-btn cg-btn-primary">Save configuration (all containers)</button>
+      <button id="cg-refresh" type="button" class="cg-btn">Refresh</button>
+    </div>
+  </div>
+
+  <div id="cg-banner" class="cg-banner" hidden></div>
+
+  <div class="cg-summary">
+    <div class="cg-summary-card"><span>Docker containers</span><strong id="cg-count-all">0</strong></div>
+    <div class="cg-summary-card"><span>Running</span><strong id="cg-count-running">0</strong></div>
+    <div class="cg-summary-card"><span>Monitored</span><strong id="cg-count-monitored">0</strong></div>
+    <div class="cg-summary-card"><span>Needs attention</span><strong id="cg-count-alert">0</strong></div>
+    <div class="cg-summary-card"><span>Daemon</span><strong id="cg-daemon-status">Unknown</strong></div>
+  </div>
+
+  <div class="cg-toolbar">
+    <input id="cg-filter" type="search" placeholder="Filter containers, images, status, or network…" autocomplete="off">
+    <select id="cg-status-filter" aria-label="Filter by state">
+      <option value="all">All states</option>
+      <option value="running">Running</option>
+      <option value="stopped">Stopped</option>
+      <option value="monitored">Monitored</option>
+      <option value="attention">Needs attention</option>
+    </select>
+    <label>
+      Refresh every
+      <select id="cg-ui-refresh">
+        <option value="2">2 seconds</option>
+        <option value="5">5 seconds</option>
+        <option value="10">10 seconds</option>
+        <option value="15">15 seconds</option>
+        <option value="30">30 seconds</option>
+        <option value="60">60 seconds</option>
+      </select>
+    </label>
+    <button id="cg-daemon-restart" type="button" class="cg-btn">Restart VFE monitor service</button>
+  </div>
+
+  <div id="cg-loading" class="cg-loading">Loading Docker containers…</div>
+  <div id="cg-containers" class="cg-container-grid"></div>
+
+  <details class="cg-log-panel">
+    <summary>VFE monitor event log</summary>
+    <div class="cg-log-actions">
+      <button id="cg-log-refresh" type="button" class="cg-btn cg-btn-small">Refresh log</button>
+    </div>
+    <pre id="cg-log">No log entries yet.</pre>
+  </details>
+</div>
+
+<script src="/plugins/vfe.docker.container.monitor/assets/guardian.js?v=<?= @filemtime(__DIR__ . '/assets/guardian.js') ?: 0 ?>"></script>

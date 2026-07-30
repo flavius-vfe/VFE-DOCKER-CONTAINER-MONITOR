@@ -1,0 +1,107 @@
+#!/bin/bash
+
+DAEMON="/usr/local/emhttp/plugins/vfe.docker.container.monitor/scripts/guardian-daemon.php"
+PIDFILE="/var/run/vfe-docker-container-monitor.pid"
+PHP_BIN="$(command -v php 2>/dev/null || true)"
+SERVICE_LOG="/var/log/vfe-docker-container-monitor-service.log"
+
+pid_matches_guardian() {
+  local pid="${1:-}"
+  [[ "$pid" =~ ^[0-9]+$ ]] || return 1
+  [[ -r "/proc/$pid/cmdline" ]] || return 1
+  tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null | grep -Fq 'guardian-daemon.php'
+}
+
+is_running() {
+  [[ -s "$PIDFILE" ]] || return 1
+  local pid
+  pid="$(cat "$PIDFILE" 2>/dev/null)"
+  pid_matches_guardian "$pid"
+}
+
+start_guardian() {
+  if is_running; then
+    echo "VFE Docker Container Monitor is already running (PID $(cat "$PIDFILE"))."
+    return 0
+  fi
+
+  # Never trust a stale PID file: the PID may now belong to another process.
+  rm -f "$PIDFILE"
+  mkdir -p /var/lib/vfe-docker-container-monitor /boot/config/plugins/vfe.docker.container.monitor
+  if [[ -z "$PHP_BIN" || ! -x "$PHP_BIN" ]]; then
+    echo "VFE Docker Container Monitor failed to start: PHP executable was not found." | tee -a "$SERVICE_LOG"
+    return 1
+  fi
+  if [[ ! -r "$DAEMON" ]]; then
+    echo "VFE Docker Container Monitor failed to start: daemon file is missing." | tee -a "$SERVICE_LOG"
+    return 1
+  fi
+
+  printf '[%s] Starting VFE Docker Container Monitor with %s\n' "$(date '+%F %T')" "$PHP_BIN" >> "$SERVICE_LOG"
+  nohup "$PHP_BIN" "$DAEMON" >>"$SERVICE_LOG" 2>&1 &
+
+  for _ in {1..50}; do
+    if is_running; then
+      echo "VFE Docker Container Monitor started (PID $(cat "$PIDFILE"))."
+      return 0
+    fi
+    sleep 0.1
+  done
+
+  echo "VFE Docker Container Monitor failed to start. Check /var/log/vfe-docker-container-monitor-service.log and /var/log/vfe-docker-container-monitor.log."
+  return 1
+}
+
+stop_guardian() {
+  if ! is_running; then
+    rm -f "$PIDFILE"
+    echo "VFE Docker Container Monitor is not running."
+    return 0
+  fi
+
+  local pid
+  pid="$(cat "$PIDFILE")"
+  kill -TERM "$pid" 2>/dev/null || true
+  for _ in {1..100}; do
+    if ! pid_matches_guardian "$pid"; then
+      rm -f "$PIDFILE"
+      echo "VFE Docker Container Monitor stopped."
+      return 0
+    fi
+    sleep 0.1
+  done
+
+  # Re-check the command line before SIGKILL so an unrelated reused PID is
+  # never terminated.
+  if pid_matches_guardian "$pid"; then
+    kill -KILL "$pid" 2>/dev/null || true
+  fi
+  rm -f "$PIDFILE"
+  echo "VFE Docker Container Monitor was force-stopped."
+}
+
+case "${1:-status}" in
+  start)
+    start_guardian
+    ;;
+  stop)
+    stop_guardian
+    ;;
+  restart)
+    stop_guardian
+    start_guardian
+    ;;
+  status)
+    if is_running; then
+      echo "VFE Docker Container Monitor is running (PID $(cat "$PIDFILE"))."
+      exit 0
+    fi
+    rm -f "$PIDFILE"
+    echo "VFE Docker Container Monitor is stopped."
+    exit 1
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|status}"
+    exit 2
+    ;;
+esac
