@@ -2,6 +2,12 @@
 
 Monitors Docker containers on Unraid with configurable health checks, dependency-aware recovery, and controlled restart protection.
 
+<p align="center">
+  <img src="images/container_monitor_1.png" width="30%" />
+  <img src="images/container_monitor_2.png" width="30%" />
+  <img src="images/container_monitor_3.png" width="30%" />
+</p>
+
 ## Requirements
 
 - Unraid 7.3.0 or newer
